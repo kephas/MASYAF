@@ -11,5 +11,6 @@
   :depends-on ("cl-utilities")
   :components ((:file "package")
 	       (:file "macros")
-	       (:file "information"))
+	       (:file "information")
+	       (:file "graph"))
   :serial t)
