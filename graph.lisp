@@ -3,15 +3,15 @@
 (defun origin-coordinates (dimensions)
   (if (zerop dimensions) nil (cons 0 (origin-coordinates (1- dimensions)))))
 
-; BUGGY
 (defun next-point (coordinates maximums)
   (labels ((rec (coordinates maximums terminal-p)
-	     (let ((following (if (rest coordinates) (rec (rest coordinates) (rest maximums) nil))))
-	       (if (or (not following) (zerop (first following)))
+	     (multiple-value-bind (following remainder) (if (rest coordinates)
+							    (rec (rest coordinates) (rest maximums) nil))
+	       (if (or (not following) remainder)
 		   (if (= (first coordinates) (first maximums))
 		       (if terminal-p
 			   nil
-			   (cons 0 following))
+			   (values (cons 0 following) t))
 		       (cons (1+ (first coordinates)) following))
 		   (cons (first coordinates) following)))))
     (rec coordinates maximums t)))
