@@ -10,3 +10,11 @@
   "Used to test SIMPLIFY-DEPENDENCIES"
   `(let ,(mapcar (lambda (name) `(,name (cons ',name nil))) names)
      ,@body))
+
+(defmacro with-functions (names &body body)
+  `(labels (,@(mapcar (lambda (name-spec)
+			(if (consp name-spec)
+			    `(,(car name-spec) (&rest rest) (apply ,(cadr name-spec) rest))
+			    `(,name-spec (&rest rest) (apply ,name-spec rest))))
+		      names))
+     ,@body))
