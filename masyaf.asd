@@ -12,5 +12,7 @@
   :components ((:file "package")
 	       (:file "macros")
 	       (:file "information")
-	       (:file "graph"))
+	       (:file "graph")
+	       (:file "gamestate")
+	       (:file "scheduler"))
   :serial t)
