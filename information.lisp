@@ -31,3 +31,45 @@ already present in the top AND clause will be discarded."
 				    and-clauses)
 			   list))
 	      (remove-if #'unneeded-or or-clauses)))))
+
+(defun every-apply (predicates &rest values)
+  (if (apply (first predicates) values)
+      (if (null (rest predicates))
+	  t
+	  (apply #'every-apply (rest predicates) values))
+      nil))
+
+(defun some-apply (predicates &rest values)
+  (if (apply (first predicates) values)
+      t
+      (if (null (rest predicates))
+	  nil
+	  (apply #'every-apply (rest predicates) values))))
+
+(defmethod information-symbol ((information list))
+  (car information))
+
+(defmethod information-arguments ((information list))
+  (cdr information))
+
+(defun clause-predicate (clause)
+  (lambda (information)
+    (if (eq (car clause) (information-symbol information))
+	(every #'identity (mapcar (lambda (matcher value)
+				    (or (eq matcher *joker*)
+					(equal matcher value)))
+				  (cdr clause)
+				  (information-arguments information))))))
+
+(defun request-predicate (request)
+  (case (car request)
+    ((not) (complement (request-predicate (cadr request))))
+    ((and or)
+     (lambda (information)
+       (funcall (getf (list 'and #'every-apply 'or #'some-apply) (car request))
+		(mapcar #'request-predicate (cdr request))
+		information)))
+    (t (clause-predicate request))))
+
+(defmethod information-search (request (information-base list))
+  (remove-if (complement (request-predicate request)) information-base))
