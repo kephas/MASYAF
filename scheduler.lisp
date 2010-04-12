@@ -14,11 +14,11 @@
 		    (lambda (type)
 		      (ensure-type type)
 		      (push agent (gethash type agents-associations)))
-		    (agent-types agent)))
+		    (agent-symbols agent)))
 	     agents)
 	(named-let loop-info ()
 	  (let ((info (extract-pending)))
-	    (named-let loop-agent ((agents (gethash (info-type info) agents-associations)))
+	    (named-let loop-agent ((agents (gethash (information-symbol info) agents-associations)))
 	      (when agents
 		(let ((result (agent-apply (first agents) (gamestate-clone gamestate) info)))
 		  (add-pending (gamestate-new-info result))
