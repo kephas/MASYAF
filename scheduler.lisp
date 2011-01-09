@@ -8,14 +8,10 @@
 		   (declare (ignore list))
 		   (unless present-p
 		     (setf (gethash type agents-associations) nil)))))
-	(map nil
-	     (lambda (agent)
-	       (map nil
-		    (lambda (type)
-		      (ensure-type type)
-		      (push agent (gethash type agents-associations)))
-		    (agent-symbols agent)))
-	     agents)
+	(dolist (agent agents)
+	  (dolist (type (agent-symbols agent))
+	    (ensure-type type)
+	    (push agent (gethash type agents-associations))))
 	(named-let loop-info ()
 	  (let ((info (extract-pending)))
 	    (named-let loop-agent ((agents (gethash (information-symbol info) agents-associations)))
