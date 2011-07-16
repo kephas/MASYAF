@@ -1,29 +1,46 @@
 (in-package :thierry-technologies.com/2010/01/masyaf)
 
+(defgeneric information-p (object))
+
+(defmethod information-p ((object list))
+  (let ((first (first object)))
+    (and (symbolp first) (not (find first '(and or))))))
+
 (defun simplify-dependencies (dependencies)
+  (declare (optimize (debug 3)))
   "Returns a dependency clause simpler but equivalent to DEPENDENCIES.
 The main AND clause will be flattened and any atomic predicate in this
 flat clause will only appear once.
-NOT WORKING: Any OR clause which contains an atomic predicate that is 
-already present in the top AND clause will be discarded."
+OR clauses must be already flat. They will be removed if unnecessary."
   (let ((and-clauses (make-hash-table))
 	(or-clauses nil))
-    (labels ((store-clauses (clause)
+    (labels ((store-clauses (clause next)
 	       (if clause
-		   (cons-bind (first rest clause)
-		     (cond ((eq 'and first)
-			    (store-clauses rest))
-			   ((eq 'or first)
-			    (push clause or-clauses))
-			   (t (setf (gethash first and-clauses) t)
-			      (store-clauses rest))))))
+		   (case (first clause)
+		     ((and) (store-and-clauses (rest clause) next))
+		     ((or) (store-or-clause (rest clause) next)))
+		   (when next
+		     (store-clauses (first next) (rest next)))))
+	     (store-and-clauses (clauses next)
+	       (if clauses
+		   (cons-bind (first rest clauses)
+		     (if (information-p first)
+			 (progn 
+			   (setf (gethash first and-clauses) t)
+			   (store-and-clauses rest next))
+			 (store-clauses first (cons (cons 'and rest) next))))
+		   (store-clauses nil next)))
+	     (store-or-clause (clause next)
+	       (let ((canonical (cons 'or (sort clause #'< :key #'sxhash))))
+		 (unless (find canonical or-clauses :test #'equal)
+		   (push canonical or-clauses))
+		 (store-clauses nil next)))
 	     (unneeded-or (clause)
 	       (if clause
 		   (cons-bind (first rest clause)
-		     (if (consp first)
-			 (or (gethash first and-clauses) (unneeded-or rest))
-			 (unneeded-or rest))))))
-      (store-clauses dependencies)
+		     (or (gethash first and-clauses) (unneeded-or rest)))
+		   nil)))
+      (store-clauses dependencies nil)
       (append (cons 'and (let ((list))
 			   (maphash (lambda (key value)
 				      (declare (ignore value))
