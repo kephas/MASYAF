@@ -9,6 +9,18 @@
 (defmethod shared-clone :after ((object gamestate-with-information) (clone gamestate-with-information))
   (setf (gamestate-info-base clone) (clone (gamestate-info-base object))))
 
+(defgeneric gamestate-add-info (gamestate info))
+
+(defmethod gamestate-add-info ((gamestate gamestate-with-information) info)
+  (setf (gamestate-info-base gamestate) (information-add info (gamestate-info-base gamestate)))
+  (push info (gamestate-new-info gamestate)))
+
+(defgeneric gamestate-info-search (gamestate request)
+  (:documentation "Convenience GF to search the IB of a gamestate."))
+
+(defmethod gamestate-info-search ((gamestate gamestate-with-information) request)
+  (information-search request (gamestate-info-base gamestate)))
+
 
 ; most games will work with a notion of a set of cells
 (defgeneric gamestate-cell (gamestate designator))
