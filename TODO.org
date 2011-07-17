@@ -1,0 +1,9 @@
+* Optimisation
+** Information base
+IB are just plain lists now, which works but will probably not scale
+very well as far as searching goes.
+
+An alternative could be using an indexed data structure. Request
+predicate creation should probably be a GF and method selection would
+be on IB type, or the predicate could a funcallable object that
+exposes information needed to use the indexes.
