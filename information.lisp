@@ -92,3 +92,6 @@ OR clauses must be already flat. They will be removed if unnecessary."
 
 (defmethod information-search (request (information-base list))
   (remove-if (complement (request-predicate request)) information-base))
+
+(defmethod information-add (new (information-base list))
+  (cons new information-base))
