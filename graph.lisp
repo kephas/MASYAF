@@ -21,7 +21,7 @@
 			   (values (cons 0 following) t))
 		       (cons (1+ (first coordinates)) following))
 		   (cons (first coordinates) following)))))
-    (rec coordinates maximums t)))
+    (rec (point-coords point) (point-max point) t)))
 
 (defun restack (from to)
   "Tail-recursive (append (reverse FROM) TO)"
