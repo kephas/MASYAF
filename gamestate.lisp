@@ -1,40 +1,36 @@
 (in-package :thierry-technologies.com/2010/01/masyaf)
 
+#| Base class of MASYAF gamestate |#
+
 (defclass gamestate-with-information ()
   ((information-base :accessor gamestate-info-base :initarg :info)
-   (new-information :accessor gamestate-new-info :initform nil)
-   (premises :accessor gamestate-premises :initform nil)))
+   (new-information :accessor gamestate-new-info :initform nil)))
 
-(defmethod gamestate-add-premise (gamestate premise)
-  (push premise (gamestate-premises gamestate)))
+(defmethod shared-clone :after ((object gamestate-with-information) (clone gamestate-with-information))
+  (setf (gamestate-info-base clone) (clone (gamestate-info-base object))))
 
-(defclass information-monitor ()
-  ((gamestate :accessor monitor-gamestate :initarg :gamestate)
-   (informations :accessor monitor-infos :initarg :infos)))
 
-(defmethod next-result (monitor)
-  (cons-bind (next rest (monitor-infos monitor))
-    (setf (monitor-infos monitor) rest)
-    (gamestate-add-premise (monitor-gamestate monitor) next)
-    next))
+; most games will work with a notion of a set of cells
+(defgeneric gamestate-cell (gamestate designator))
 
-(defmethod gamestate-search (gamestate request)
-  (make-instance 'information-monitor
-		 :gamestate gamestate
-		 :infos (information-search request (gamestate-info-base gamestate))))
 
-(defclass gamestate-with-array (gamestate-with-information)
-  ((array :accessor gamestate-array :initarg :array)))
+#| Gamestate with cells organized in a cartesian space with limits |#
 
-(defclass gamestate-with-rootset (gamestate-with-information)
-  ((rootset :accessor gamestate-rootset :initarg :rootset)))
+(defclass gamestate-with-cartesian-space ()
+  ((space :accessor gamestate-space)))
 
-(defclass gamestate-with-origin (gamestate-with-information)
-  ((origin :accessor gamestate-origin :initarg :origin)))
+(defmethod initialize-instance :after ((instance gamestate-with-cartesian-space) &rest initargs &key size filler &allow-other-keys)
+  (declare (ignore initargs))
+  (let ((space (make-array size :initial-element nil)))
+    (when filler
+      (named-let rec ((point (make-instance 'cartesian-point :coords (origin-coordinates (length size)) :max size)))
+	(when point
+	  (setf (apply #'aref space (point-coords point)) (funcall filler point))
+	  (rec (next-point point)))))
+    (setf (gamestate-space instance) space)))
 
-(defclass gamestate-with-adjacency (gamestate-with-information)
-  ((adjacency :initarg :adjacency)))
+(defmethod shared-clone :after ((object gamestate-with-cartesian-space) (clone gamestate-with-cartesian-space))
+  (setf (gamestate-space clone) (copy-array (gamestate-space object))))
 
-(defmethod cells-adjacent-p (gamestate cell1 cell2)
-  (member cell2 (gethash cell1 (slot-value gamestate 'adjacency))))
-
+(defmethod gamestate-cell ((gamestate gamestate-with-cartesian-space) (designator cartesian-point))
+  (apply #'aref (gamestate-space gamestate) (point-coords designator)))
