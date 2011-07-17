@@ -17,7 +17,10 @@
 (defmethod shared-clone (object clone))
 
 
-#| Shallow cloning for lists (for information bases) |#
+#| Shallow cloning for some built-in classes |#
 
 (defmethod clone ((object list))
   (copy-list object))
+
+(defmethod clone ((object array))
+  (copy-array object))
