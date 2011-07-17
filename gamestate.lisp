@@ -29,20 +29,23 @@
 #| Gamestate with cells organized in a cartesian space with limits |#
 
 (defclass gamestate-with-cartesian-space ()
-  ((space :accessor gamestate-space)))
+  ((size :accessor gamestate-space-size :initarg :size)
+   (space :accessor gamestate-space :initform nil)))
 
-(defmethod initialize-instance :after ((instance gamestate-with-cartesian-space) &rest initargs &key size filler &allow-other-keys)
+(defmethod initialize-instance :after ((instance gamestate-with-cartesian-space) &rest initargs &key filler &allow-other-keys)
   (declare (ignore initargs))
-  (let ((space (make-array size :initial-element nil)))
-    (when filler
+  (when filler
+    (let* ((size (gamestate-space-size instance))
+	   (space (make-array size :initial-element nil)))
       (named-let rec ((point (make-instance 'cartesian-point :coords (origin-coordinates (length size)) :max size)))
 	(when point
 	  (setf (apply #'aref space (point-coords point)) (funcall filler point))
-	  (rec (next-point point)))))
-    (setf (gamestate-space instance) space)))
+	  (rec (next-point point))))
+      (setf (gamestate-space instance) space))))
 
 (defmethod shared-clone :after ((object gamestate-with-cartesian-space) (clone gamestate-with-cartesian-space))
-  (setf (gamestate-space clone) (copy-array (gamestate-space object))))
+  (setf (gamestate-space clone) (clone (gamestate-space object))
+	(gamestate-space-size clone) (gamestate-space-size object)))
 
 (defmethod gamestate-cell ((gamestate gamestate-with-cartesian-space) (designator cartesian-point))
   (apply #'aref (gamestate-space gamestate) (point-coords designator)))

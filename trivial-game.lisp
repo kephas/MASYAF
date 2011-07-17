@@ -6,14 +6,14 @@
 		   (lambda (game info)
 		     (let ((point (make-instance 'cartesian-point
 						 :coords (information-arguments info)
-						 :max (mapcar #'1- (array-dimensions (gamestate-space game))))))
+						 :max (mapcar #'1- (gamestate-space-size game)))))
 		       (dolist (coords (mapcar #'point-coords (neighbours point)) game)
 			 (unless (gamestate-info-search game (list 'or (cons c2 coords) (cons c1 coords)))
 			   (gamestate-add-info game (cons c2 coords)))))))))
     (list (make-agent color1 color2) (make-agent color2 color1))))
 
 (defun render-bw-2d (game)
-  (let ((size (array-dimensions (gamestate-space game))))
+  (let ((size (gamestate-space-size game)))
     (dotimes (i (first size))
       (dotimes (j (second size))
 	(if (gamestate-info-search game (list 'black i j))

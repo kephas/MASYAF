@@ -23,3 +23,12 @@
 		      (loop-agent result (rest agents)))
 		    (loop-info gamestate (extract-pending))))
 	      gamestate))))))
+
+(defun solve (gamestate agents)
+  (let ((pending (gamestate-new-info gamestate)))
+    (scheduler gamestate agents
+	       (lambda (new-infos)
+		 (setf pending (append new-infos pending)))
+	       (lambda ()
+		 (prog1 (first pending)
+		   (setf pending (rest pending)))))))
