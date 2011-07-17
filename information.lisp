@@ -69,6 +69,8 @@ OR clauses must be already flat. They will be removed if unnecessary."
 (defmethod information-arguments ((information list))
   (cdr information))
 
+(defvar *joker* '_)
+
 (defun clause-predicate (clause)
   (lambda (information)
     (if (eq (car clause) (information-symbol information))
