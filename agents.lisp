@@ -5,3 +5,10 @@
 
 (defgeneric agent-apply (agent gamestate information)
   (:documentation "Makes AGENT react to information INFORMATION in the game GAMESTATE."))
+
+
+(defmethod agent-symbols ((agent list))
+  (car agent))
+
+(defmethod agent-apply ((agent list) gamestate information)
+  (funcall (cadr agent) gamestate information))
