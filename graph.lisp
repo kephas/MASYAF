@@ -3,7 +3,14 @@
 (defun origin-coordinates (dimensions)
   (if (zerop dimensions) nil (cons 0 (origin-coordinates (1- dimensions)))))
 
+#|
+For NEXT-POINT and NEIGHBOURS, MAXIMUM is the list of
+the maximum of each coordinate (or the coordinates of
+the corner of the available space farthest from origin.
+|#
+
 (defun next-point (coordinates maximums)
+  "When browsing through points in order of their coordinates, returns the next point."
   (labels ((rec (coordinates maximums terminal-p)
 	     (multiple-value-bind (following remainder) (if (rest coordinates)
 							    (rec (rest coordinates) (rest maximums) nil))
@@ -17,11 +24,13 @@
     (rec coordinates maximums t)))
 
 (defun restack (from to)
+  "Tail-recursive (append (reverse FROM) TO)"
   (if from
       (restack (rest from) (cons (first from) to))
       to))
 
 (defun neighbours (coordinates maximums)
+  "Returns all neighbours of a point."
   (labels ((rec (coordinates maximums previous neighbours)
 	     (cons-bind (current rest coordinates)
 	       (unless (zerop current)
