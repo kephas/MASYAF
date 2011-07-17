@@ -11,6 +11,7 @@
   :depends-on ("cl-utilities")
   :components ((:file "package")
 	       (:file "macros")
+	       (:file "clone")
 	       (:file "information")
 	       (:file "graph")
 	       (:file "gamestate")
