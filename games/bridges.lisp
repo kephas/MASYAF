@@ -26,7 +26,7 @@
 (defun make-path-to-island (game island direction orientation)
   (make-path island (make-movement direction orientation)
 	     (except-first (lambda (point)
-			     (gamestate-info-search game (cons 'number _ (vect-coords point)))))))
+			     (gamestate-info-search game `(number _ ,@(vect-coords point)))))))
 
 (defun possible-bridges (game island direction orientation)
   (let ((wall (turn direction))
@@ -43,7 +43,7 @@
 				   (if (gamestate-info-search game `(bridge ,wall ,@(vect-coords first))) 0 2)
 				   (- 2 (length (gamestate-info-search game `(bridge ,direction ,@(vect-coords first))))))
 			 t)))
-	      (if (and room? island?) possible 0)))
+	      (if room? possible 0)))
 	0)))
 
 (defun existing-bridges (game island direction orientation)
@@ -54,13 +54,16 @@
 							   island))))))
 
 (defun in-all-directions (game island fun)
-  (reduce #'+ (mapcar (lambda (spec)
-			(cons-bind (direction orientation spec)
-			  (funcall fun game island direction orientation)))
-		      '((vertical . t)(vertical . nil)(horizontal . t)(horizontal . nil)))))
+  (mapcar (lambda (spec)
+	    (cons-bind (direction orientation spec)
+	      (funcall fun game island direction orientation)))
+	  '((vertical . t)(vertical . nil)(horizontal . t)(horizontal . nil))))
+
+(defun sum (list)
+  (reduce #'+ list))
 
 (defun needed-bridges (game island)
-  (- (island-number game island) (in-all-directions game island #'existing-bridges)))
+  (- (island-number game island) (sum (in-all-directions game island #'existing-bridges))))
 
 (defun add-bridge (game island direction orientation)
   (map nil (except-first (lambda (point)
