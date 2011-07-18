@@ -185,5 +185,5 @@
       (named-let rec ((point start)
 		      (path nil))
 	(if (end? point)
-	    (reverse path)
+	    (reverse (cons point path))
 	    (rec (transform point) (cons point path)))))))
