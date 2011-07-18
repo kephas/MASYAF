@@ -53,7 +53,8 @@
   (make-instance 'vector :space object :coords (numbers 1 (space-dimensions object))))
 
 (defmethod %in-space? ((object vector) (space cartesian-hyperoctant))
-  (every #'< (vect-coords object) (space-size space)))
+  (and (every #'< (vect-coords object) (space-size space))
+       (every (lambda (n) (>= n 0)) (vect-coords object))))
 
 
 (defgeneric multiply (vector factor))
