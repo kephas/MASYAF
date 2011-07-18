@@ -130,6 +130,10 @@
 		 :coords (apply #'mapcar #'+ (mapcar #'vect-coords (list object move)))
 		 :space space))
 
+(defun make-translation (move)
+  (lambda (object)
+    (translate object move)))
+
 
 #| Neighbours |#
 
@@ -168,3 +172,15 @@
 		    (complete-grid (make-instance 'cartesian-hyperoctant :size (numbers 3 dimensions))))
 	    :key #'vect-coords
 	    :test #'equal)))
+
+
+#| Paths |#
+
+(defun make-path (start transform &optional end?)
+  (let ((end? (if end? end? (complement #'in-space?))))
+    (with-functions (transform end?)
+      (named-let rec ((point start)
+		      (path nil))
+	(if (end? point)
+	    (reverse path)
+	    (rec (transform point) (cons point path)))))))
