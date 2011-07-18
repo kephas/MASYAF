@@ -57,6 +57,12 @@
        (every (lambda (n) (>= n 0)) (vect-coords object))))
 
 
+(defgeneric make-vector (context coords))
+
+(defmethod make-vector ((context spatial) coords)
+  (make-instance 'vector :coords coords :space (space context)))
+
+
 (defgeneric multiply (vector factor))
 
 (defmethod multiply ((vector vector) (factor number))
