@@ -12,6 +12,10 @@
 (defun in-space? (object)
   (%in-space? object (space object)))
 
+(defmethod shared-clone :after ((object spatial) (clone spatial))
+  (with-slots (space) clone
+    (setf space (space object))))
+
 
 #| Spaces |#
 
@@ -104,6 +108,13 @@
     (if point
 	(rec (next-point-in-grid point grid-unit) (cons point grid))
 	grid)))
+
+(defmacro do-grid ((var space &optional grid-unit) &body body)
+  (once-only (space grid-unit)
+    `(named-let rec ((,var (origin ,space)))
+       (when ,var
+	 ,@body
+	 (rec (next-point-in-grid ,var ,grid-unit))))))
 
 
 #| Translation |#

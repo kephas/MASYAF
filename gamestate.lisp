@@ -24,28 +24,33 @@
 
 ; most games will work with a notion of a set of cells
 (defgeneric gamestate-cell (gamestate designator))
+(defgeneric retrieve-space-cell (container space designator))
+(defgeneric store-space-cell (value container space designator))
+
+(defmethod retrieve-space-cell ((container array) (space cartesian-space) (designator vector))
+  (apply #'aref container (vect-coords designator)))
+
+(defmethod store-space-cell (value (container array) (space cartesian-space) (designator vector))
+  (setf (apply #'aref container (vect-coords designator)) value))
 
 
-#| Gamestate with cells organized in a cartesian space with limits |#
+#| Gamestate with cells organized in a cartesian space (possibly with limits) |#
 
-(defclass gamestate-with-cartesian-space ()
-  ((size :accessor gamestate-space-size :initarg :size)
-   (space :accessor gamestate-space :initform nil)))
+(defclass gamestate-with-space (spatial)
+  ((cells :reader gamestate-cells :initform nil)))
 
-(defmethod initialize-instance :after ((instance gamestate-with-cartesian-space) &rest initargs &key filler &allow-other-keys)
+(defmethod initialize-instance :after ((instance gamestate-with-space) &rest initargs &key filler &allow-other-keys)
   (declare (ignore initargs))
   (when filler
-    (let* ((size (gamestate-space-size instance))
-	   (space (make-array size :initial-element nil)))
-      (named-let rec ((point (make-instance 'cartesian-point :coords (origin-coordinates (length size)) :max size)))
-	(when point
-	  (setf (apply #'aref space (point-coords point)) (funcall filler point))
-	  (rec (next-point point))))
-      (setf (gamestate-space instance) space))))
+    (let ((space (space instance)))
+      (with-slots (cells) instance
+	(setf cells (make-array (space-dimensions space)))
+	(do-grid (point space) ; TODO: maybe cartesian-specific
+	  (store-space-cell (funcall filler point) cells space point))))))
 
 (defmethod shared-clone :after ((object gamestate-with-cartesian-space) (clone gamestate-with-cartesian-space))
-  (setf (gamestate-space clone) (clone (gamestate-space object))
-	(gamestate-space-size clone) (gamestate-space-size object)))
+  (with-slots (cells) clone
+    (setf cells (gamestate-cells object))))
 
-(defmethod gamestate-cell ((gamestate gamestate-with-cartesian-space) (designator cartesian-point))
-  (apply #'aref (gamestate-space gamestate) (point-coords designator)))
+(defmethod gamestate-cell ((gamestate gamestate-with-space) designator)
+  (retrieve-space-cell (gamestate-cells gamestate) (space gamestate) designator))
