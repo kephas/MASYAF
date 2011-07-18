@@ -15,6 +15,11 @@
   (setf (gamestate-info-base gamestate) (information-add info (gamestate-info-base gamestate)))
   (push info (gamestate-new-info gamestate)))
 
+(defgeneric gamestate-renew-info (gamestate info))
+
+(defmethod gamestate-renew-info ((gamestate gamestate-with-information) info)
+  (push info (gamestate-new-info gamestate)))
+
 (defgeneric gamestate-info-search (gamestate request)
   (:documentation "Convenience GF to search the IB of a gamestate."))
 
