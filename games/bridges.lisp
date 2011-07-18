@@ -26,7 +26,7 @@
 (defun make-path-to-island (game island direction orientation)
   (make-path island (make-movement direction orientation)
 	     (except-first (lambda (point)
-			     (gamestate-info-search game (cons 'number (vect-coords point)))))))
+			     (gamestate-info-search game (cons 'number _ (vect-coords point)))))))
 
 (defun possible-bridges (game island direction orientation)
   (let ((wall (turn direction)))
