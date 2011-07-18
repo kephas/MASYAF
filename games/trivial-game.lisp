@@ -4,16 +4,14 @@
   (labels ((make-agent (c1 c2)
 	     (list (list c1)
 		   (lambda (game info)
-		     (let ((point (make-instance 'cartesian-point
-						 :coords (information-arguments info)
-						 :max (mapcar #'1- (gamestate-space-size game)))))
-		       (dolist (coords (mapcar #'point-coords (neighbours point)) game)
+		     (let ((point (make-instance 'vector :coords (information-arguments info) :space (space game))))
+		       (dolist (coords (mapcar #'vect-coords (neighbours point 'manhattan-distance)) game)
 			 (unless (gamestate-info-search game (list 'or (cons c2 coords) (cons c1 coords)))
 			   (gamestate-add-info game (cons c2 coords)))))))))
     (list (make-agent color1 color2) (make-agent color2 color1))))
 
 (defun render-bw-2d (game)
-  (let ((size (gamestate-space-size game)))
+  (let ((size (space-size (space game))))
     (dotimes (i (first size))
       (dotimes (j (second size))
 	(if (gamestate-info-search game (list 'black i j))
@@ -23,9 +21,9 @@
 	    (princ " ")))
       (terpri))))
 
-(defclass trivial-game (gamestate-with-information gamestate-with-cartesian-space)())
+(defclass trivial-game (gamestate-with-information gamestate-with-space)())
 
 (defun test-trivial-game (width height x y)
-  (let ((game (make-instance 'trivial-game :info nil :size (list width height))))
+  (let ((game (make-instance 'trivial-game :info nil :space (make-instance 'cartesian-hyperoctant :size (list width height)))))
     (gamestate-add-info game (list 'black x y))
     (render-bw-2d (solve game (make-alternating-agents 'black 'white)))))
