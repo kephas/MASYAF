@@ -30,16 +30,28 @@
 
 (defun possible-bridges (game island direction orientation)
   (let ((wall (turn direction)))
-    (named-let rec ((path (make-path-to-island game island direction orientation))
-		    (possible 2))
+    (named-let rec ((path (rest (make-path-to-island game island direction orientation)))
+		    (possible 2)
+		    (room? nil))
       (if path
 	  (cons-bind (first rest path)
 	    (if (zerop possible)
 		0
 		(rec rest (min possible
 			       (if (gamestate-info-search game `(bridge ,wall ,@(vect-coords first))) 0 2)
-			       (- 2 (length (gamestate-info-search game `(bridge ,direction ,@(vect-coords first)))))))))
-	  possible))))
+			       (- 2 (length (gamestate-info-search game `(bridge ,direction ,@(vect-coords first))))))
+		     t)))
+	  (if room? possible 0)))))
+
+(defun existing-bridges (game island)
+  (reduce #'+ (mapcar (lambda (spec)
+			(cons-bind (direction orientation spec)
+			  (length
+			   (gamestate-info-search game
+						  `(bridge ,direction
+							   ,@(vect-coords (funcall (make-movement direction orientation)
+										   island)))))))
+		      '((vertical . t)(vertical . nil)(horizontal . t)(horizontal . nil))))))
 
 (defun add-bridge (game island direction orientation)
   (map nil (except-first (lambda (point)
