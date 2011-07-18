@@ -177,7 +177,10 @@
 #| Paths |#
 
 (defun make-path (start transform &optional end?)
-  (let ((end? (if end? end? (complement #'in-space?))))
+  (let ((end? (if end?
+		  (lambda (p) (or (not (in-space? p))
+				  (funcall end? p)))
+		  (complement #'in-space?))))
     (with-functions (transform end?)
       (named-let rec ((point start)
 		      (path nil))
