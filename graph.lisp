@@ -1,54 +1,82 @@
 (in-package :thierry-technologies.com/2010/01/masyaf)
 
-(defclass cartesian-point ()
-  ((coordinates :reader point-coords :initarg :coords)
-   (space-size :reader point-max :initarg :max :documentation "coordinates of the corner of the available space farthest from origin")))
+#| Objects contained in a space |#
 
-(defmethod print-object ((object cartesian-point) stream)
+(defclass spatial ()
+  ((space :reader space :initarg :space)))
+
+(defgeneric %in-space? (object space))
+(defgeneric origin (object))
+(defgeneric unit-vector (object))
+
+(defun in-space? (object)
+  (%in-space? object (space object)))
+
+
+#| Spaces |#
+
+(defclass cartesian-space ()
+  ((dimensions :reader space-dimensions :initarg :dim)))
+
+(defclass cartesian-hyperoctant (cartesian-space)
+  ((size :reader space-size :initarg :size :initform nil)))
+
+(defmethod space-dimensions ((object cartesian-hyperoctant))
+  (length (space-size object)))
+
+(defmethod %in-space? (object (space cartesian-space))
+  (declare (ignore object space))
+  t)
+
+
+#| Vector in a space (also used as-is for points |#
+
+(defclass vector (spatial)
+  ((coordinates :reader vect-coords :initarg :coords)))
+
+(defmethod origin ((object cartesian-space))
+  (make-instance 'vector :space object :coords (make-sequence 'list (space-dimensions object) :initial-element 0)))
+
+(defmethod unit-vector ((object cartesian-space))
+  (make-instance 'vector :space object :coords (make-sequence 'list (space-dimensions object) :initial-element 1)))
+
+(defmethod %in-space? ((object vector) (space cartesian-hyperoctant))
+  (every #'< (vect-coords object) (space-size space)))
+
+; pretty-printing of vectors
+(defgeneric %print-vector (vector space stream))
+
+(defmethod %print-vector (vector (space cartesian-space) stream)
+  (format stream "[cartesian] ~a" (vect-coords vector)))
+
+(defmethod %print-vector (vector (space cartesian-hyperoctant) stream)
+  (call-next-method)
+  (format stream " <~a>" (space-size space)))
+
+(defmethod print-object ((object vector) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~a <~a>" (point-coords object) (point-max object))))
+    (%print-vector object (space object) stream)))
 
-(defun origin-coordinates (dimensions)
-  (if (zerop dimensions) nil (cons 0 (origin-coordinates (1- dimensions)))))
 
-(defgeneric next-point (point)
-  (:documentation "When browsing through points in order of their coordinates, returns the next point."))
+#| Point enumeration |#
 
-(defmethod next-point ((point cartesian-point))
-  (labels ((rec (coordinates maximums terminal-p)
+(defun next-point-in-grid (point &key (grid-unit (unit-vector (space point))))
+  "When browsing through points in lexicographical order of their coordinates, returns the next point."
+  (%next-point point (space point) grid-unit))
+
+(defgeneric %next-point (point space grid-unit))
+
+(defmethod %next-point (point (space cartesian-hyperoctant) grid-unit)
+  (labels ((rec (coordinates maximums unit terminal-p)
 	     (multiple-value-bind (following remainder) (if (rest coordinates)
-							    (rec (rest coordinates) (rest maximums) nil))
+							    (rec (rest coordinates) (rest maximums) (rest unit) nil))
 	       (if (or (not following) remainder)
-		   (if (= (first coordinates) (first maximums))
+		   (let ((next (+ (first coordinates) (first unit))))
+		     (if (>= next (first maximums))
 		       (if terminal-p
 			   nil
 			   (values (cons 0 following) t))
-		       (cons (1+ (first coordinates)) following))
+		       (cons next following)))
 		   (cons (first coordinates) following)))))
-    (make-instance 'cartesian-point
-		   :coords (rec (point-coords point) (point-max point) t)
-		   :max (point-max point))))
-  
-
-(defun restack (from to)
-  "Tail-recursive (append (reverse FROM) TO)"
-  (if from
-      (restack (rest from) (cons (first from) to))
-      to))
-
-(defgeneric neighbours (point)
-  (:documentation "Returns all neighbours of a point."))
-
-(defmethod neighbours ((point cartesian-point))
-  (labels ((rec (coordinates maximums previous neighbours)
-	     (cons-bind (current rest coordinates)
-	       (unless (zerop current)
-		 (push (restack previous (cons (1- current) rest)) neighbours))
-	       (unless (= current (first maximums))
-		 (push (restack previous (cons (1+ current) rest)) neighbours))
-	       (if rest 
-		   (rec rest (rest maximums) (cons current previous) neighbours)
-		   neighbours))))
-    (mapcar (lambda (coords)
-	      (make-instance 'cartesian-point :coords coords :max (point-max point)))
-	    (rec (point-coords point) (point-max point) nil nil))))
+    (cif coords (rec (vect-coords point) (space-size space) (vect-coords grid-unit) t)
+	 (make-instance 'vector :coords coords :space space))))
