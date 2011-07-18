@@ -1,3 +1,9 @@
+* Ideas
+** Superceded events
+   Events must always be true which precludes using events to describe
+   anything not final, but some events could have a timestamp as one
+   parameter, and searching the information related to this event
+   would always include searching the most recent.
 * Optimisation
 ** Information base
 IB are just plain lists now, which works but will probably not scale
