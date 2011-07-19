@@ -12,4 +12,5 @@
     (dotimes (line (second dimensions))
       (dotimes (row (first dimensions))
 	(princ (aref array line row)))
-      (terpri))))
+      (terpri)))
+  game)
