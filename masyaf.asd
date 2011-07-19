@@ -15,6 +15,7 @@
 	       (:file "information")
 	       (:file "graph")
 	       (:file "gamestate")
+	       (:file "display")
 	       (:file "agents")
 	       (:file "scheduler"))
   :serial t)
