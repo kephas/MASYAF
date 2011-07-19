@@ -28,24 +28,6 @@
 	     (except-first (lambda (point)
 			     (gamestate-info-search game `(number _ ,@(vect-coords point)))))))
 
-(defun possible-bridges (game island direction orientation)
-  (let ((wall (turn direction))
-	(whole-path (make-path-to-island game island direction orientation)))
-    (if (gamestate-info-search game `(number _ ,@(vect-coords (first (last whole-path)))))
-	(named-let rec ((path (rest (butlast whole-path)))
-			(possible 2)
-			(room? nil))
-	  (if path
-	      (cons-bind (first rest path)
-		(if (zerop possible)
-		    0
-		    (rec rest (min possible
-				   (if (gamestate-info-search game `(bridge ,wall ,@(vect-coords first))) 0 2)
-				   (- 2 (length (gamestate-info-search game `(bridge ,direction ,@(vect-coords first))))))
-			 t)))
-	      (if room? possible 0)))
-	0)))
-
 (defun existing-bridges (game island direction orientation)
   (length
    (gamestate-info-search game
@@ -68,6 +50,28 @@
 
 (defun needed-bridges (game island)
   (- (island-number game island) (sum (in-all-directions game island #'existing-bridges))))
+
+(defun is-island (game point)
+  (gamestate-info-search game `(number _ ,@(vect-coords (vect-coords point)))))
+
+(defun possible-bridges (game island direction orientation)
+  (let* ((wall (turn direction))
+	 (whole-path (make-path-to-island game island direction orientation))
+	 (endpoint (first (last whole-path))))
+    (if (is-island game endpoint)
+	(named-let rec ((path (rest (butlast whole-path)))
+			(possible 2)
+			(room? nil))
+	  (if path
+	      (cons-bind (first rest path)
+		(if (zerop possible)
+		    0
+		    (rec rest (min possible
+				   (if (gamestate-info-search game `(bridge ,wall ,@(vect-coords first))) 0 2)
+				   (- 2 (length (gamestate-info-search game `(bridge ,direction ,@(vect-coords first))))))
+			 t)))
+	      (if room? (min possible (needed-bridges game endpoint)) 0)))
+	0)))
 
 (defun add-bridge (game island direction orientation)
   (let* ((whole-path (make-path-to-island game island direction orientation))
