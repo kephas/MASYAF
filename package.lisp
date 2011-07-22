@@ -20,7 +20,7 @@
    #:information-add
    ;; space
    #:spatial
-   #:space
+   #:space-of
    #:in-space?
    #:%in-space?
    #:origin
