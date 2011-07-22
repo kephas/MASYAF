@@ -63,6 +63,9 @@ OR clauses must be already flat. They will be removed if unnecessary."
 	  nil
 	  (apply #'every-apply (rest predicates) values))))
 
+(defgeneric information-symbol (information))
+(defgeneric information-arguments (information))
+
 (defmethod information-symbol ((information list))
   (car information))
 
@@ -89,6 +92,9 @@ OR clauses must be already flat. They will be removed if unnecessary."
 		(mapcar #'request-predicate (cdr request))
 		information)))
     (t (clause-predicate request))))
+
+(defgeneric information-search (request information-base))
+(defgeneric information-add (new information-base))
 
 (defmethod information-search (request (information-base list))
   (remove-if (complement (request-predicate request)) information-base))
