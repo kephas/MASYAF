@@ -1,15 +1,14 @@
-(in-package :thierry-technologies.com/2010/01/masyaf)
+(defpackage :thierry-technologies.com/2010/01/masyaf/bridges
+  (:use :cl :thierry-technologies.com/2010/01/masyaf)
+  (:export
+   #:bridges-game
+   #:*agents*
+   #:*char-renderers*))
+
+(in-package :thierry-technologies.com/2010/01/masyaf/bridges)
+
 
 (defclass bridges-game (gamestate-with-information gamestate-with-space)())
-
-(defun except-first (fun &optional value)
-  (let ((first t))
-    (lambda (&rest args)
-      (if first
-	  (progn
-	    (setf first nil)
-	    value)
-	  (apply fun args)))))
 
 (defun turn (direction)
   (case direction
@@ -17,7 +16,7 @@
     ((vertical) 'horizontal)))
 
 (defun make-movement (direction orientation)
-  (make-translation (multiply (make-instance 'vector :space (make-instance 'cartesian-space :dim 2)
+  (make-translation (multiply (make-instance 'sp-vector :space (make-instance 'cartesian-space :dim 2)
 					     :coords (case direction
 						       ((horizontal) '(1 0))
 						       ((vertical) '(0 1))))
@@ -107,10 +106,12 @@
 					 (add-bridge game island dir orient))))))
 	  game)))
 
+(defvar *agents* (list *saturate* *each-open-direction*))
+
 
 #| Renderers |#
 
-(defvar *bridges-renderers*
+(defvar *char-renderers*
   (list (lambda (game coords)
 	  (cif infos (gamestate-info-search game `(number _ ,@coords))
 	       (aref (format nil "~a" (first (information-arguments (first infos)))) 0)))
