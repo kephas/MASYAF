@@ -1,6 +1,5 @@
 (defpackage :thierry-technologies.com/2010/01/masyaf
   (:use :common-lisp :asdf :cl-utilities)
-  (:shadow #:vector #:space)
   (:nicknames :masyaf)
   (:export 
    ;; macros
@@ -44,6 +43,8 @@
    #:neighbours
    #:unit-circle
    #:%neighbours
+   #:manhattan-distance
+   #:chebyshev-distance
    #:make-path
    #:except-first
    ;; gamestate

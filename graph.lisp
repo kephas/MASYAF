@@ -3,18 +3,18 @@
 #| Objects contained in a space |#
 
 (defclass spatial ()
-  ((space :reader space :initarg :space)))
+  ((space :reader space-of :initarg :space)))
 
 (defgeneric %in-space? (object space))
 (defgeneric origin (object))
 (defgeneric unit-vector (object))
 
 (defun in-space? (object)
-  (%in-space? object (space object)))
+  (%in-space? object (space-of object)))
 
 (defmethod shared-clone :after ((object spatial) (clone spatial))
   (with-slots (space) clone
-    (setf space (space object))))
+    (setf space (space-of object))))
 
 
 #| Spaces |#
@@ -35,7 +35,7 @@
 
 #| Vector in a space (also used as-is for points |#
 
-(defclass vector (spatial)
+(defclass sp-vector (spatial)
   ((coordinates :reader vect-coords :initarg :coords)))
 
 ; if only coordinates are needed, sequences can be used as vectors
@@ -47,10 +47,10 @@
   (make-sequence 'list times :initial-element number))
 
 (defmethod origin ((object cartesian-space))
-  (make-instance 'vector :space object :coords (numbers 0 (space-dimensions object))))
+  (make-instance 'sp-vector :space object :coords (numbers 0 (space-dimensions object))))
 
 (defmethod unit-vector ((object cartesian-space))
-  (make-instance 'vector :space object :coords (numbers 1 (space-dimensions object))))
+  (make-instance 'sp-vector :space object :coords (numbers 1 (space-dimensions object))))
 
 (defmethod %in-space? ((object vector) (space cartesian-hyperoctant))
   (and (every #'< (vect-coords object) (space-size space))
@@ -60,13 +60,13 @@
 (defgeneric make-vector (context coords))
 
 (defmethod make-vector ((context spatial) coords)
-  (make-instance 'vector :coords coords :space (space context)))
+  (make-instance 'sp-vector :coords coords :space (space-of context)))
 
 
 (defgeneric multiply (vector factor))
 
 (defmethod multiply ((vector vector) (factor number))
-  (make-instance 'vector :space (space vector)
+  (make-instance 'sp-vector :space (space-of vector)
 		 :coords (mapcar (lambda (n) (* factor n)) (vect-coords vector))))
 
 
@@ -82,15 +82,15 @@
 
 (defmethod print-object ((object vector) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (%print-vector object (space object) stream)))
+    (%print-vector object (space-of object) stream)))
 
 
 #| Point enumeration |#
 
 (defun next-point-in-grid (point &optional grid-unit)
   "When browsing through points in lexicographical order of their coordinates, returns the next point."
-  (let ((grid-unit (if grid-unit grid-unit (unit-vector (space point)))))
-    (%next-point point (space point) grid-unit)))
+  (let ((grid-unit (if grid-unit grid-unit (unit-vector (space-of point)))))
+    (%next-point point (space-of point) grid-unit)))
 
 (defgeneric %next-point (point space grid-unit))
 
@@ -107,7 +107,7 @@
 		       (cons next following)))
 		   (cons (first coordinates) following)))))
     (cif coords (rec (vect-coords point) (space-size space) (vect-coords grid-unit) t)
-	 (make-instance 'vector :coords coords :space space))))
+	 (make-instance 'sp-vector :coords coords :space space))))
 
 (defun complete-grid (space &optional grid-unit)
   (named-let rec ((point (origin space))
@@ -129,10 +129,10 @@
 (defgeneric %translate (object space move))
 
 (defun translate (object move)
-  (%translate object (space object) move))
+  (%translate object (space-of object) move))
 
 (defmethod %translate ((object vector) (space cartesian-space) move)
-  (make-instance 'vector
+  (make-instance 'sp-vector
 		 :coords (apply #'mapcar #'+ (mapcar #'vect-coords (list object move)))
 		 :space space))
 
@@ -148,7 +148,7 @@
 (defgeneric unit-circle (space norm))
 
 (defun neighbours (point connectivity)
-  (%neighbours point (space point) connectivity))
+  (%neighbours point (space-of point) connectivity))
 
 (defmethod %neighbours (point (space cartesian-space) connectivity)
   (remove-if (complement #'in-space?) (mapcar (lambda (p)
@@ -163,10 +163,10 @@
     (if (< after 0)
 	points
 	(if odd?
-	    (rec before after (not odd?) (cons (make-instance 'vector :space space
+	    (rec before after (not odd?) (cons (make-instance 'sp-vector :space space
 							      :coords (append (numbers 0 before) (list 1) (numbers 0 after)))
 					       points))
-	    (rec (1+ before) (1- after) (not odd?) (cons (make-instance 'vector :space space
+	    (rec (1+ before) (1- after) (not odd?) (cons (make-instance 'sp-vector :space space
 									:coords (append (numbers 0 before) (list -1) (numbers 0 after)))
 							 points))))))
 

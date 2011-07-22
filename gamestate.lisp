@@ -47,7 +47,7 @@
 (defmethod initialize-instance :after ((instance gamestate-with-space) &rest initargs &key filler &allow-other-keys)
   (declare (ignore initargs))
   (when filler
-    (let ((space (space instance)))
+    (let ((space (space-of instance)))
       (with-slots (cells) instance
 	(setf cells (make-array (space-dimensions space)))
 	(do-grid (point space) ; TODO: maybe cartesian-specific
@@ -58,4 +58,4 @@
     (setf cells (gamestate-cells object))))
 
 (defmethod gamestate-cell ((gamestate gamestate-with-space) designator)
-  (retrieve-space-cell (gamestate-cells gamestate) (space gamestate) designator))
+  (retrieve-space-cell (gamestate-cells gamestate) (space-of gamestate) designator))

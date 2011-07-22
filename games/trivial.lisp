@@ -1,10 +1,5 @@
 (defpackage :thierry-technologies.com/2010/01/masyaf/trivial
-  (:use :thierry-technologies.com/2010/01/masyaf)
-  (:import-from :cl 
-		defun lambda let labels
-		list cons first second rest t nil mapcar 
-		if when unless dolist dotimes
-		defclass make-instance)
+  (:use :cl :thierry-technologies.com/2010/01/masyaf)
   (:export
    #:test-trivial-game))
    
@@ -16,9 +11,9 @@
 		   (lambda (game info)
 		     (labels ((clause (color coords)
 				`(color ,color ,@coords)))
-		       (let ((point (make-instance 'vector :coords (information-arguments info) :space (space game))))
+		       (let ((point (make-instance 'sp-vector :coords (information-arguments info) :space (space-of game))))
 			 (dolist (coords (mapcar #'vect-coords (neighbours point 'manhattan-distance)) game)
-			   (unless (gamestate-info-search game `(or ,(clause c2 coords) ,(clause c1 coords)))
+			   (unless (gamestate-info-search game `(color _ coords))
 			     (gamestate-add-info game (clause c2 coords))))))))))
     (list (make-agent color1 color2) (make-agent color2 color1))))
 
@@ -35,6 +30,6 @@
 
 (defun test-trivial-game (width height x y)
   (let ((game (make-instance 'trivial-game :info nil :space (make-instance 'cartesian-hyperoctant :size (list width height)))))
-    (gamestate-add-info game (list 'black x y))
+    (gamestate-add-info game `(color black ,x ,y))
     (render-2d-spatial-game-by-char (solve game (make-alternating-agents 'black 'white))
 				    *char-renderers*)))

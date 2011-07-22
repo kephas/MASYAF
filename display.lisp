@@ -1,9 +1,9 @@
 (in-package :thierry-technologies.com/2010/01/masyaf)
 
 (defun render-2d-spatial-game-by-char (game renderers)
-  (let* ((dimensions (space-size (space game)))
+  (let* ((dimensions (space-size (space-of game)))
 	 (array (make-array (reverse dimensions) :element-type 'character)))
-    (do-grid (point (space game))
+    (do-grid (point (space-of game))
       (let ((coords (vect-coords point)))
 	(named-let rec ((renderers renderers))
 	  (cif char (funcall (first renderers) game coords)
