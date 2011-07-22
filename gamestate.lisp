@@ -53,7 +53,7 @@
 	(do-grid (point space) ; TODO: maybe cartesian-specific
 	  (store-space-cell (funcall filler point) cells space point))))))
 
-(defmethod shared-clone :after ((object gamestate-with-cartesian-space) (clone gamestate-with-cartesian-space))
+(defmethod shared-clone :after ((object gamestate-with-space) (clone gamestate-with-space))
   (with-slots (cells) clone
     (setf cells (gamestate-cells object))))
 

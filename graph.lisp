@@ -193,3 +193,12 @@
 	(if (end? point)
 	    (reverse (cons point path))
 	    (rec (transform point) (cons point path)))))))
+
+(defun except-first (fun &optional value)
+  (let ((first t))
+    (lambda (&rest args)
+      (if first
+	  (progn
+	    (setf first nil)
+	    value)
+	  (apply fun args)))))
