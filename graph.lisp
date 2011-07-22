@@ -52,7 +52,7 @@
 (defmethod unit-vector ((object cartesian-space))
   (make-instance 'sp-vector :space object :coords (numbers 1 (space-dimensions object))))
 
-(defmethod %in-space? ((object vector) (space cartesian-hyperoctant))
+(defmethod %in-space? ((object sp-vector) (space cartesian-hyperoctant))
   (and (every #'< (vect-coords object) (space-size space))
        (every (lambda (n) (>= n 0)) (vect-coords object))))
 
@@ -65,7 +65,7 @@
 
 (defgeneric multiply (vector factor))
 
-(defmethod multiply ((vector vector) (factor number))
+(defmethod multiply ((vector sp-vector) (factor number))
   (make-instance 'sp-vector :space (space-of vector)
 		 :coords (mapcar (lambda (n) (* factor n)) (vect-coords vector))))
 
@@ -80,7 +80,7 @@
   (call-next-method)
   (format stream " <~a>" (space-size space)))
 
-(defmethod print-object ((object vector) stream)
+(defmethod print-object ((object sp-vector) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (%print-vector object (space-of object) stream)))
 
@@ -131,7 +131,7 @@
 (defun translate (object move)
   (%translate object (space-of object) move))
 
-(defmethod %translate ((object vector) (space cartesian-space) move)
+(defmethod %translate ((object sp-vector) (space cartesian-space) move)
   (make-instance 'sp-vector
 		 :coords (apply #'mapcar #'+ (mapcar #'vect-coords (list object move)))
 		 :space space))
