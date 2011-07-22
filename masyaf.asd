@@ -18,4 +18,5 @@
 	       (:file "display" :depends-on ("graph" "macros"))
 	       (:file "agents" :depends-on ("package"))
 	       (:file "scheduler" :depends-on ("agents" "gamestate"))
-	       (:file "games/trivial" :depends-on ("gamestate" "macros"))))
+	       (:file "games/trivial" :depends-on ("gamestate" "macros"))
+	       (:file "games/bridges" :depends-on ("gamestate" "macros"))))
