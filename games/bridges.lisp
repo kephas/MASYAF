@@ -47,6 +47,9 @@
 (defun sum (list)
   (reduce #'+ list))
 
+(defun island-number (game island)
+  (second (first (gamestate-info-search game `(number _ ,@(vect-coords island))))))
+
 (defun needed-bridges (game island)
   (- (island-number game island) (sum (in-all-directions game island #'existing-bridges))))
 
