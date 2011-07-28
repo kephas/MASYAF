@@ -6,8 +6,8 @@
 		   (lambda (game info)
 		     (let ((point (make-instance 'sp-vector :coords (rest (information-arguments info)) :space (space-of game))))
 		       (dolist (coords (mapcar #'vect-coords (remove-if (complement #'in-space?) (neighbours point 'manhattan-distance))) game)
-			 (unless (gamestate-info-search game `(color _ ,coords))
-			   (gamestate-add-info game `(color ,c2 ,coords)))))))))
+			 (unless (gamestate-info-search game `(color _ ,@coords))
+			   (gamestate-add-info game `(color ,c2 ,@coords)))))))))
     (list (make-agent color1 color2) (make-agent color2 color1))))
 
 (defclass trivial-game (gamestate-with-information gamestate-with-space)())
