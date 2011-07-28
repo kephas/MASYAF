@@ -13,3 +13,7 @@ An alternative could be using an indexed data structure. Request
 predicate creation should probably be a GF and method selection would
 be on IB type, or the predicate could a funcallable object that
 exposes information needed to use the indexes.
+* Existing games
+** Nurikabe
+   http://www.logicgamesonline.com/nurikabe/archive.php?pid=NNNN
+   Look for the solpuz variable!
