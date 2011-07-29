@@ -7,7 +7,7 @@
   :description "Multi-Agent SYstem, game-Agnostic Framework for logical game solving"
   :version "0.1.0"
   :author "Pierre Thierry <pierre.thierry@thierry-technologies.com>"
-  :licence "GPL"
+  :licence "AGPL"
   :depends-on ("cl-utilities")
   :components ((:file "package")
 	       (:file "macros" :depends-on ("package"))
