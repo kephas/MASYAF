@@ -8,7 +8,7 @@
   :version "0.1.0"
   :author "Pierre Thierry <pierre.thierry@thierry-technologies.com>"
   :licence "GPL"
-  :depends-on ("cl-utilities" "gtk")
+  :depends-on ("cl-utilities" "cl-gtk2-gtk")
   :components ((:file "package")
 	       (:file "macros")
 	       (:file "clone")
